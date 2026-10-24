@@ -46,21 +46,13 @@ public class ChamadoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Chamado> atualizar(@PathVariable Long id, @Valid @RequestBody Chamado chamadoAtualizado) {
-        try {
-            Chamado chamadoSalvo = chamadoService.atualizar(id, chamadoAtualizado);
-            return ResponseEntity.ok(chamadoSalvo);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Chamado chamadoSalvo = chamadoService.atualizar(id, chamadoAtualizado);
+        return ResponseEntity.ok(chamadoSalvo);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        try {
-            chamadoService.deletar(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        chamadoService.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }
