@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -89,5 +90,29 @@ class ChamadoServiceTest {
         assertNotNull(atualizado.getDataFechamento());
         verify(chamadoRepository, times(1)).findById(1L);
         verify(chamadoRepository, times(1)).save(any(Chamado.class));
+    }
+
+    @Test
+    void deveManterStatusAoAtualizarSemEnviarStatus() {
+        Chamado existente = new Chamado();
+        existente.setId(1L);
+        existente.setTitulo("Titulo Antigo");
+        existente.setDescricao("Desc Antiga");
+        existente.setStatus(StatusChamado.FECHADO);
+        existente.setDataFechamento(LocalDateTime.now());
+
+        Chamado atualizacao = new Chamado();
+        atualizacao.setTitulo("Titulo Novo");
+        atualizacao.setDescricao("Desc Nova");
+        atualizacao.setStatus(null); // Status não enviado no JSON
+
+        when(chamadoRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(chamadoRepository.save(any(Chamado.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Chamado atualizado = chamadoService.atualizar(1L, atualizacao);
+
+        assertEquals(StatusChamado.FECHADO, atualizado.getStatus());
+        assertNotNull(atualizado.getDataFechamento());
+        assertEquals("Titulo Novo", atualizado.getTitulo());
     }
 }
