@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HelpDesk Pro - Gerenciamento de Chamados</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        header h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        header p {
+            color: #64748b;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            border: 1px solid var(--border);
+        }
+        h2 {
+            margin-bottom: 15px;
+            font-size: 1.25rem;
+            color: #334155;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .filters select {
+            width: 200px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+        th {
+            background-color: #f1f5f9;
+            font-weight: 600;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .badge-ABERTO { background-color: #fef08a; color: #854d0e; }
+        .badge-EM_ANDAMENTO { background-color: #bfdbfe; color: #1e40af; }
+        .badge-FECHADO { background-color: #bbf7d0; color: #166534; }
+
+        .actions button {
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        .btn-danger:hover {
+            background-color: #b91c1c;
+        }
+        .btn-success {
+            background-color: var(--success);
+        }
+        .btn-success:hover {
+            background-color: #15803d;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HelpDesk Pro</h1>
+        <p>Sistema Simples de Gestão de Chamados</p>
+    </header>
+
+    <div class="card">
+        <h2>Novo Chamado</h2>
+        <form id="formChamado">
+            <div class="form-group">
+                <label for="titulo">Título</label>
+                <input type="text" id="titulo" required placeholder="Ex: Erro ao acessar o sistema">
+            </div>
+            <div class="form-group">
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" required placeholder="Descreva o problema detalhadamente..."></textarea>
+            </div>
+            <button type="submit">Abrir Chamado</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Lista de Chamados</h2>
+        <div class="filters">
+            <label for="filtroStatus">Filtrar por Status:</label>
+            <select id="filtroStatus" onchange="carregarChamados()">
+                <option value="">TODOS</option>
+                <option value="ABERTO">ABERTO</option>
+                <option value="EM_ANDAMENTO">EM_ANDAMENTO</option>
+                <option value="FECHADO">FECHADO</option>
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Status</th>
+                    <th>Data Criação</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabelaChamados">
+                <!-- Preenchido via JavaScript -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = '/chamados';
+
+        document.getElementById('formChamado').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const titulo = document.getElementById('titulo').value;
+            const descricao = document.getElementById('descricao').value;
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ titulo, descricao })
+                });
+
+                if (response.ok) {
+                    document.getElementById('formChamado').reset();
+                    carregarChamados();
+                } else {
+                    alert('Erro ao criar chamado.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Erro de conexão com o servidor.');
+            }
+        });
+
+        async function carregarChamados() {
+            const status = document.getElementById('filtroStatus').value;
+            let url = API_URL;
+            if (status) {
+                url = `${API_URL}/status/${status}`;
+            }
+
+            try {
+                const response = await fetch(url);
+                const chamados = await response.json();
+
+                const tbody = document.getElementById('tabelaChamados');
+                tbody.innerHTML = '';
+
+                chamados.forEach(c => {
+                    const dataFormatada = new Date(c.dataCriacao).toLocaleString('pt-BR');
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${c.id}</td>
+                        <td><strong>${c.titulo}</strong><br><small style="color: #64748b">${c.descricao.substring(0, 50)}...</small></td>
+                        <td><span class="badge badge-${c.status}">${c.status}</span></td>
+                        <td>${dataFormatada}</td>
+                        <td class="actions">
+                            ${c.status !== 'EM_ANDAMENTO' ? `<button onclick="alterarStatus(${c.id}, 'EM_ANDAMENTO')" class="btn-warning" style="background-color: var(--warning)">Andamento</button>` : ''}
+                            ${c.status !== 'FECHADO' ? `<button onclick="alterarStatus(${c.id}, 'FECHADO')" class="btn-success">Fechar</button>` : ''}
+                            <button onclick="deletarChamado(${c.id})" class="btn-danger">Excluir</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar chamados:', error);
+            }
+        }
+
+        async function alterarStatus(id, novoStatus) {
+            try {
+                const res = await fetch(`${API_URL}/${id}`);
+                const chamado = await res.json();
+
+                chamado.status = novoStatus;
+
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(chamado)
+                });
+
+                if (response.ok) {
+                    carregarChamados();
+                } else {
+                    alert('Erro ao atualizar status.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+
+        async function deletarChamado(id) {
+            if (!confirm('Deseja realmente excluir este chamado?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    carregarChamados();
+                } else {
+                    alert('Erro ao excluir chamado.');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+            }
+        }
+
+        carregarChamados();
+    </script>
+</body>
+</html>
