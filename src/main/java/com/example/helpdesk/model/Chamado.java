@@ -2,25 +2,27 @@ package com.example.helpdesk.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-@Entity
+@Entity // Diz pro JPA que isso vira uma tabela
 @Table(name = "chamados")
 public class Chamado {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id // Chave primária
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Gera o id sozinho
     private Long id;
 
     @NotBlank(message = "O título não pode estar em branco")
-    @Column(nullable = false)
+    @Size(max = 255, message = "O título deve ter no máximo 255 caracteres")
+    @Column(nullable = false, length = 255)
     private String titulo;
 
     @NotBlank(message = "A descrição não pode estar em branco")
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT") // Usa TEXT pra descrição maior
     private String descricao;
 
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING) // Salva o nome do enum no banco, não o número
     @Column(nullable = false)
     private StatusChamado status;
 
@@ -31,8 +33,8 @@ public class Chamado {
     private LocalDateTime dataFechamento;
 
     public Chamado() {
+        // Já marca a data assim que cria o objeto
         this.dataCriacao = LocalDateTime.now();
-        this.status = StatusChamado.ABERTO;
     }
 
     public Long getId() { return id; }
