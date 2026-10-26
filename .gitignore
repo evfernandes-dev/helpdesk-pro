@@ -1,5 +1,12 @@
-﻿target/
+target/
 .mvn/
 .idea/
+.vscode/
 *.iml
 .DS_Store
+.env
+*.log
+.settings/
+.classpath
+.project
+bin/
