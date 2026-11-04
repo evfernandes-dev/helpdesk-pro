@@ -1,105 +1,113 @@
 # HelpDesk Pro
 
-[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen.svg)](https://spring.io/projects/spring-boot)
-[![MySQL](https://img.shields.io/badge/MySQL-8.0-blue.svg)](https://www.mysql.com/)
-[![Maven](https://img.shields.io/badge/Maven-3.9+-C71A36.svg)](https://maven.apache.org/)
-[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED.svg)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+A REST API for support ticket management, built as a study and portfolio project with **Java 21**, **Spring Boot 3.4**, **Spring Data JPA** and **MySQL**.
 
-A robust, production-ready REST API for technical support ticket management, built with modern Java 21, Spring Boot 3.4, and MySQL.
+The application exposes CRUD endpoints for tickets, applies a simple status lifecycle, validates request data, and includes a small static dashboard for manual testing.
+
+> **Project status:** study/portfolio project. It is not production-ready and does not include authentication yet.
 
 ---
 
 ## Features
 
-- **Full CRUD Operations**: Create, list, search by ID or status, update, and delete support tickets (`chamados`).
-- **Automated Lifecycle Management**: Closing dates (`dataFechamento`) are automatically populated upon ticket closure and cleared upon reopening.
-- **Data Validation**: Bean Validation constraints (`@NotBlank`, `@Size`) ensuring data integrity at the API boundary.
-- **Exception Handling**: Standardized error handling returning clean HTTP status codes (e.g., `404 Not Found` for missing resources).
-- **Interactive API Documentation**: Swagger UI integrated via `springdoc-openapi` (`/swagger-ui.html`).
-- **Responsive Web Frontend**: Clean static dashboard (`index.html`) serving as a client interface.
-- **Containerized Environment**: Fully containerized with Docker and Docker Compose including health checks and persistent storage.
-- **Automated Testing**: Comprehensive unit tests with JUnit 5 and Mockito verifying service business logic.
+- Create, list, search by ID or status, update and delete tickets (`chamados`).
+- New tickets start with status `ABERTO` and a creation timestamp.
+- When a ticket is closed, `dataFechamento` is filled automatically; when it is reopened, the field is cleared.
+- Bean Validation constraints (`@NotBlank`, `@Size`) on title and description.
+- `GET /chamados/{id}` returns `404 Not Found` when the ticket does not exist.
+- Swagger UI generated with Springdoc OpenAPI.
+- Simple static dashboard served from `src/main/resources/static`.
+- Docker Compose setup with a MySQL health check and a persistent volume.
+- Unit tests for the service layer with JUnit 5 and Mockito.
 
 ---
 
-## Tech Stack
+## Tech stack
 
-- **Core & Language**: Java 21 (LTS), Spring Boot 3.4.5
-- **Persistence**: Spring Data JPA, Hibernate, MySQL 8.0
-- **Validation & Docs**: Jakarta Bean Validation, Springdoc OpenAPI 2.8.5 (Swagger UI)
-- **Build Tool**: Apache Maven
-- **Testing**: JUnit 5, Mockito
-- **Containerization**: Docker, Docker Compose
+- **Language and framework:** Java 21, Spring Boot 3.4.5
+- **Persistence:** Spring Data JPA, Hibernate, MySQL 8.0
+- **Validation:** Jakarta Bean Validation
+- **API documentation:** Springdoc OpenAPI 2.8.5 (Swagger UI)
+- **Build:** Maven
+- **Tests:** JUnit 5, Mockito
+- **Containers:** Docker, Docker Compose
 
 ---
 
-## Architecture & Project Structure
+## Architecture
 
-HelpDesk Pro follows a classic, clean **layered architecture**:
-1. **Controller Layer (`controller`)**: Exposes REST endpoints, handling HTTP requests and responses.
-2. **Service Layer (`service`)**: Encapsulates core business logic and transactional boundaries (`@Transactional`).
-3. **Repository Layer (`repository`)**: Spring Data JPA interfaces communicating with the relational database.
+The project uses a layered structure:
+
+1. **Controller** (`controller`): exposes the REST endpoints.
+2. **Service** (`service`): business rules and transaction boundaries.
+3. **Repository** (`repository`): Spring Data JPA interfaces.
+4. **Model** (`model`): JPA entities and the status enum.
+5. **Exception** (`exception`): custom exception for missing resources.
 
 ```text
 helpdesk-pro/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/example/helpdesk/
-│   │   │   ├── controller/      # REST Controllers (ChamadoController)
-│   │   │   ├── exception/       # Global & Custom Exceptions (RecursoNaoEncontradoException)
-│   │   │   ├── model/           # JPA Entities & Enums (Chamado, StatusChamado)
-│   │   │   ├── repository/      # Spring Data JPA Repositories (ChamadoRepository)
-│   │   │   └── service/         # Business Logic Services (ChamadoService)
+│   │   │   ├── controller/      # REST controller
+│   │   │   ├── exception/       # Custom exception
+│   │   │   ├── model/           # Entity and status enum
+│   │   │   ├── repository/      # Spring Data JPA repository
+│   │   │   └── service/         # Business logic
 │   │   └── resources/
-│   │       ├── static/          # Web Frontend (index.html)
-│   │       └── application.properties # Configuration & environment bindings
+│   │       ├── static/          # Static dashboard
+│   │       └── application.properties
 │   └── test/
-│       └── java/com/example/helpdesk/
-│           └── service/         # Unit Tests (ChamadoServiceTest)
+│       └── java/com/example/helpdesk/service/
+│           └── ChamadoServiceTest.java
 ├── Dockerfile
 ├── docker-compose.yml
 ├── pom.xml
 └── README.md
 ```
 
----
-
-## Domain & Business Rules
-
-The system manages support tickets (`Chamados`) with the following domain attributes and rules:
-
-- **Status Values**:
-  - `ABERTO` (Open)
-  - `EM_ANDAMENTO` (In Progress)
-  - `FECHADO` (Closed)
-  *(Note: Portuguese domain terms and status values are preserved to reflect the core business domain model).*
-- **Business Rules**:
-  - New tickets default to status `ABERTO` and record `dataCriacao` (creation timestamp).
-  - When a ticket status transitions to `FECHADO`, `dataFechamento` (closing timestamp) is automatically populated with the current timestamp.
-  - If a closed ticket is reopened (status changed to `ABERTO` or `EM_ANDAMENTO`), `dataFechamento` is automatically cleared (`null`).
-  - Read operations automatically sort tickets in descending order by creation date (`findAllByOrderByDataCriacaoDesc`).
+> A global exception handler is a planned improvement. Today, the service raises a custom exception for missing resources on update/delete, but it is not yet mapped to a specific HTTP status.
 
 ---
 
-## API Endpoints
+## Domain and business rules
+
+Tickets use three status values:
+
+- `ABERTO` (open)
+- `EM_ANDAMENTO` (in progress)
+- `FECHADO` (closed)
+
+Rules implemented in `ChamadoService`:
+
+- New tickets default to `ABERTO` and receive `dataCriacao`.
+- Closing a ticket fills `dataFechamento` with the current timestamp.
+- Reopening a ticket clears `dataFechamento`.
+- Listing returns tickets ordered by creation date, newest first.
+- Updating without sending a status keeps the current status.
+
+---
+
+## API endpoints
 
 Base URL: `http://localhost:8080`
 
 | Method | Route | Description |
 | :--- | :--- | :--- |
-| `GET` | `/chamados` | List all support tickets (sorted by newest first) |
-| `GET` | `/chamados/{id}` | Get ticket details by ID |
-| `GET` | `/chamados/status/{status}` | Filter tickets by status (`ABERTO`, `EM_ANDAMENTO`, `FECHADO`) |
-| `POST` | `/chamados` | Create a new support ticket |
-| `PUT` | `/chamados/{id}` | Update an existing ticket |
-| `DELETE` | `/chamados/{id}` | Delete a ticket by ID |
+| `GET` | `/chamados` | List tickets, newest first |
+| `GET` | `/chamados/{id}` | Get a ticket by ID |
+| `GET` | `/chamados/status/{status}` | Filter by status |
+| `POST` | `/chamados` | Create a ticket |
+| `PUT` | `/chamados/{id}` | Update a ticket |
+| `DELETE` | `/chamados/{id}` | Delete a ticket |
 
-### Request & Response Examples
+### Create a ticket
 
-#### Create Ticket (`POST /chamados`)
-**Request Body**:
+```http
+POST /chamados
+Content-Type: application/json
+```
+
 ```json
 {
   "titulo": "Erro ao acessar o sistema",
@@ -107,7 +115,8 @@ Base URL: `http://localhost:8080`
 }
 ```
 
-**Response (`201 Created`)**:
+Response (`201 Created`):
+
 ```json
 {
   "id": 1,
@@ -119,86 +128,112 @@ Base URL: `http://localhost:8080`
 }
 ```
 
+### Swagger UI
+
+With the application running, open:
+
+```text
+http://localhost:8080/swagger-ui.html
+```
+
 ---
 
-## Interactive Documentation (Swagger UI)
+## Running with Docker Compose
 
-When the application is running, access the interactive OpenAPI / Swagger documentation at:
-- **URL**: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+Requirements: Docker and Docker Compose.
 
----
+1. Create the environment file and adjust the values if needed:
 
-## How to Run
-
-### Option 1: With Docker Compose (Recommended)
-Make sure Docker and Docker Compose are installed on your machine.
-
-1. Clone the repository and navigate to the project directory:
-   ```bash
-   git clone https://github.com/evfernandes-dev/helpdesk-pro.git
-   cd helpdesk-pro
+   ```powershell
+   Copy-Item .env.example .env
    ```
-2. Start containers in detached mode:
+
+2. Start the containers:
+
    ```bash
    docker compose up --build -d
    ```
-3. The application will be running at `http://localhost:8080` and MySQL at port `3306`.
-4. To stop the containers:
+
+3. Open the API at `http://localhost:8080`. MySQL is exposed on port `3306`.
+
+4. Stop the containers:
+
    ```bash
    docker compose down
    ```
 
-### Option 2: Locally with Maven and MySQL
-1. Ensure Java 21 and MySQL are installed and running locally.
-2. Create a MySQL database named `helpdesk_pro`:
+The `.env.example` file contains local development values only. Do not commit a real `.env`.
+
+---
+
+## Running locally
+
+Requirements: Java 21, MySQL 8 and Maven.
+
+1. Create the database:
+
    ```sql
    CREATE DATABASE helpdesk_pro;
    ```
-3. Configure your database credentials in `src/main/resources/application.properties` or set environment variables:
-   ```bash
-   export SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/helpdesk_pro?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=America/Sao_Paulo
-   export SPRING_DATASOURCE_USERNAME=root
-   export SPRING_DATASOURCE_PASSWORD=your_password
+
+2. Set the database connection variables:
+
+   ```powershell
+   $env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3306/helpdesk_pro?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo"
+   $env:SPRING_DATASOURCE_USERNAME = "root"
+   $env:SPRING_DATASOURCE_PASSWORD = "your_password"
    ```
-4. Run the application using Maven:
+
+3. Start the application:
+
    ```bash
    mvn spring-boot:run
    ```
 
 ---
 
-## Running Tests
+## Tests
 
-The test suite covers core business logic, status transitions, validation, and exception handling using JUnit 5 and Mockito.
+The current test suite covers the service layer:
 
-To run the tests:
+- listing tickets;
+- creating a ticket with the default status;
+- closing a ticket and filling the closing date;
+- updating a ticket without losing the current status.
+
+Run:
+
 ```bash
 mvn test
 ```
 
----
-
-## Screenshots
-
-| Ticket List Dashboard | Ticket Management Form |
-| :---: | :---: |
-| ![Ticket List](docs/img/ticket-list.png) | ![Ticket Form](docs/img/ticket-form.png) |
-
-*(Note: To populate these screenshots on GitHub, capture UI snapshots of the running web interface and save them as `docs/img/ticket-list.png` and `docs/img/ticket-form.png`).*
+The tests do not cover the HTTP layer or the validation constraints yet.
 
 ---
 
-## Future Improvements
+## What I practiced
 
-- [ ] **Spring Security & JWT Authentication**: Add user roles (Admin, Technician, Customer) and secured endpoints.
-- [ ] **Pagination & Sorting**: Implement `Pageable` on listing endpoints for large datasets.
-- [ ] **Advanced Filtering**: Date range filters and technician assignment tracking.
-- [ ] **CI/CD Pipeline**: GitHub Actions workflow for automated testing and container builds.
+- Layered REST API organization with controller, service and repository.
+- JPA entity mapping, derived queries and transaction boundaries.
+- Bean Validation at the API boundary.
+- Unit tests with JUnit 5 and Mockito.
+- Running a Spring Boot application and MySQL with Docker Compose.
 
 ---
 
-## Author & License
+## Next steps
 
-Developed by **Emanuel Vitor** ([@evfernandes-dev](https://github.com/evfernandes-dev)).
+- Add a global exception handler to return consistent JSON errors and `404` for missing resources.
+- Add controller/integration tests.
+- Add pagination and sorting.
+- Add authentication and authorization.
+- Add a CI workflow for tests and container builds.
+- Add screenshots of the dashboard.
 
-This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+---
+
+## License
+
+MIT. See [LICENSE](LICENSE).
+
+Developed by [Emanuel Vitor](https://github.com/evfernandes-dev).
