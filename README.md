@@ -1,107 +1,115 @@
-# HelpDesk Pro
+# Sistema de Chamados
 
-A REST API for support ticket management, built as a study and portfolio project with **Java 21**, **Spring Boot 3.4**, **Spring Data JPA** and **MySQL**.
+API REST simples para gerenciamento de chamados de suporte, feita como projeto de estudo com **Java 21**, **Spring Boot 3.4**, **Spring Data JPA** e **MySQL**.
 
-The application exposes CRUD endpoints for tickets, applies a simple status lifecycle, validates request data, and includes a small static dashboard for manual testing.
+O projeto tem CRUD de chamados, um ciclo de status simples, validação dos dados e um dashboard estático para testar a API pelo navegador.
 
-> **Project status:** study/portfolio project. It is not production-ready and does not include authentication yet.
+> **Status:** projeto de estudo/portfólio. Não é pronto para produção e ainda não tem autenticação.
 
----
+## Telas
 
-## Features
+Dashboard:
 
-- Create, list, search by ID or status, update and delete tickets (`chamados`).
-- New tickets start with status `ABERTO` and a creation timestamp.
-- When a ticket is closed, `dataFechamento` is filled automatically; when it is reopened, the field is cleared.
-- Bean Validation constraints (`@NotBlank`, `@Size`) on title and description.
-- `GET /chamados/{id}` returns `404 Not Found` when the ticket does not exist.
-- Swagger UI generated with Springdoc OpenAPI.
-- Simple static dashboard served from `src/main/resources/static`.
-- Docker Compose setup with a MySQL health check and a persistent volume.
-- Unit tests for the service layer with JUnit 5 and Mockito.
+![Dashboard do sistema](docs/img/dashboard.png)
 
----
+Documentação da API no Swagger:
 
-## Tech stack
+![Swagger UI](docs/img/swagger.png)
 
-- **Language and framework:** Java 21, Spring Boot 3.4.5
-- **Persistence:** Spring Data JPA, MySQL 8.0
-- **Validation:** Jakarta Bean Validation
-- **API documentation:** Springdoc OpenAPI 2.8.5 (Swagger UI)
-- **Build:** Maven
-- **Tests:** JUnit 5, Mockito
-- **Containers:** Docker, Docker Compose
+## Funcionalidades
 
----
+- Criar, listar, buscar por ID ou status, atualizar e excluir chamados.
+- Todo chamado novo começa com status `ABERTO` e recebe a data de criação.
+- Ao fechar um chamado, a data de fechamento é preenchida; ao reabrir, ela é limpa.
+- Validação de título e descrição com Bean Validation.
+- `GET /chamados/{id}` retorna `404 Not Found` quando o chamado não existe.
+- Documentação gerada com Springdoc OpenAPI (Swagger UI).
+- Dashboard estático em `src/main/resources/static`.
+- Docker Compose com MySQL, healthcheck e volume persistente.
+- Testes unitários da camada de serviço com JUnit 5 e Mockito.
 
-## Architecture
+## Tecnologias
 
-The project uses a layered structure:
+- Java 21 e Spring Boot 3.4.5
+- Spring Data JPA, Hibernate e MySQL 8.0
+- Jakarta Bean Validation
+- Springdoc OpenAPI 2.8.5
+- Maven
+- JUnit 5 e Mockito
+- Docker e Docker Compose
 
-1. **Controller** (`controller`): exposes the REST endpoints.
-2. **Service** (`service`): business rules and transaction boundaries.
-3. **Repository** (`repository`): Spring Data JPA interfaces.
-4. **Model** (`model`): JPA entities and the status enum.
-5. **Exception** (`exception`): custom exception for missing resources.
+## Como rodar
 
-```text
-helpdesk-pro/
-├── src/
-│   ├── main/
-│   │   ├── java/com/example/helpdesk/
-│   │   │   ├── controller/      # REST controller
-│   │   │   ├── exception/       # Custom exception
-│   │   │   ├── model/           # Entity and status enum
-│   │   │   ├── repository/      # Spring Data JPA repository
-│   │   │   └── service/         # Business logic
-│   │   └── resources/
-│   │       ├── static/          # Static dashboard
-│   │       └── application.properties
-│   └── test/
-│       └── java/com/example/helpdesk/service/
-│           └── ChamadoServiceTest.java
-├── Dockerfile
-├── docker-compose.yml
-├── pom.xml
-└── README.md
-```
+### Opção 1: Docker
 
-> Missing resources on update/delete are mapped to `404 Not Found` with `@ResponseStatus`. A global exception handler with a consistent JSON error body is a planned improvement.
+Pré-requisitos: Docker e Docker Compose.
 
----
+1. Crie o arquivo de ambiente:
 
-## Domain and business rules
+   ```powershell
+   Copy-Item .env.example .env
+   ```
 
-Tickets use three status values:
+2. Suba os containers:
 
-- `ABERTO` (open)
-- `EM_ANDAMENTO` (in progress)
-- `FECHADO` (closed)
+   ```bash
+   docker compose up --build -d
+   ```
 
-Rules implemented in `ChamadoService`:
+3. Acesse:
 
-- New tickets default to `ABERTO` and receive `dataCriacao`.
-- Closing a ticket fills `dataFechamento` with the current timestamp.
-- Reopening a ticket clears `dataFechamento`.
-- Listing returns tickets ordered by creation date, newest first.
-- Updating without sending a status keeps the current status.
+   - Dashboard: `http://localhost:8080`
+   - Swagger: `http://localhost:8080/swagger-ui.html`
+   - API: `http://localhost:8080/chamados`
 
----
+4. Para parar:
 
-## API endpoints
+   ```bash
+   docker compose down
+   ```
 
-Base URL: `http://localhost:8080`
+O `.env.example` tem apenas valores locais. Não commite o `.env`.
 
-| Method | Route | Description |
+### Opção 2: local
+
+Pré-requisitos: Java 21, Maven e MySQL 8.
+
+1. Crie o banco:
+
+   ```sql
+   CREATE DATABASE helpdesk_pro;
+   ```
+
+2. Configure a conexão no PowerShell:
+
+   ```powershell
+   $env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3306/helpdesk_pro?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo"
+   $env:SPRING_DATASOURCE_USERNAME = "root"
+   $env:SPRING_DATASOURCE_PASSWORD = "sua_senha"
+   ```
+
+3. Inicie a aplicação:
+
+   ```bash
+   mvn spring-boot:run
+   ```
+
+## Endpoints
+
+Base: `http://localhost:8080`
+
+| Método | Rota | Descrição |
 | :--- | :--- | :--- |
-| `GET` | `/chamados` | List tickets, newest first |
-| `GET` | `/chamados/{id}` | Get a ticket by ID |
-| `GET` | `/chamados/status/{status}` | Filter by status |
-| `POST` | `/chamados` | Create a ticket |
-| `PUT` | `/chamados/{id}` | Update a ticket |
-| `DELETE` | `/chamados/{id}` | Delete a ticket |
+| `GET` | `/chamados` | Lista os chamados, do mais novo para o mais antigo |
+| `GET` | `/chamados/{id}` | Busca um chamado pelo ID |
+| `GET` | `/chamados/status/{status}` | Filtra por status |
+| `POST` | `/chamados` | Cria um chamado |
+| `PUT` | `/chamados/{id}` | Atualiza um chamado |
+| `DELETE` | `/chamados/{id}` | Exclui um chamado |
 
-### Create a ticket
+Status possíveis: `ABERTO`, `EM_ANDAMENTO` e `FECHADO`.
+
+### Exemplo de criação
 
 ```http
 POST /chamados
@@ -115,7 +123,7 @@ Content-Type: application/json
 }
 ```
 
-Response (`201 Created`):
+Resposta (`201 Created`):
 
 ```json
 {
@@ -128,112 +136,45 @@ Response (`201 Created`):
 }
 ```
 
-### Swagger UI
-
-With the application running, open:
+## Estrutura
 
 ```text
-http://localhost:8080/swagger-ui.html
+src/main/java/com/example/helpdesk/
+├── controller/   # Endpoints REST
+├── exception/    # Exceção de recurso não encontrado
+├── model/        # Entidade Chamado e enum StatusChamado
+├── repository/   # Interfaces do Spring Data JPA
+└── service/      # Regras de negócio
 ```
 
----
+A entidade `Chamado` também é usada como corpo das requisições para manter o projeto simples. Em um projeto maior, eu usaria DTOs separados.
 
-## Running with Docker Compose
-
-Requirements: Docker and Docker Compose.
-
-1. Create the environment file and adjust the values if needed:
-
-   ```powershell
-   Copy-Item .env.example .env
-   ```
-
-2. Start the containers:
-
-   ```bash
-   docker compose up --build -d
-   ```
-
-3. Open the API at `http://localhost:8080`. MySQL is exposed on port `3306`.
-
-4. Stop the containers:
-
-   ```bash
-   docker compose down
-   ```
-
-The `.env.example` file contains local development values only. Do not commit a real `.env`.
-
----
-
-## Running locally
-
-Requirements: Java 21, MySQL 8 and Maven.
-
-1. Create the database:
-
-   ```sql
-   CREATE DATABASE helpdesk_pro;
-   ```
-
-2. Set the database connection variables:
-
-   ```powershell
-   $env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3306/helpdesk_pro?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo"
-   $env:SPRING_DATASOURCE_USERNAME = "root"
-   $env:SPRING_DATASOURCE_PASSWORD = "your_password"
-   ```
-
-3. Start the application:
-
-   ```bash
-   mvn spring-boot:run
-   ```
-
----
-
-## Tests
-
-The current test suite covers the service layer:
-
-- listing tickets;
-- creating a ticket with the default status;
-- closing a ticket and filling the closing date;
-- updating a ticket without losing the current status.
-
-Run:
+## Testes
 
 ```bash
 mvn test
 ```
 
-The tests do not cover the HTTP layer or the validation constraints yet.
+A suíte atual tem 4 testes da camada de serviço: listagem, criação, fechamento e atualização sem alterar o status. A camada HTTP ainda não tem testes.
 
----
+## O que pratiquei
 
-## What I practiced
+- Organização em camadas com controller, service e repository.
+- Mapeamento JPA, queries derivadas e transações.
+- Validação com Bean Validation.
+- Testes unitários com JUnit 5 e Mockito.
+- Spring Boot e MySQL rodando com Docker Compose.
+- Documentação de API com Swagger.
 
-- Layered REST API organization with controller, service and repository.
-- JPA entity mapping, derived queries and transaction boundaries.
-- Bean Validation at the API boundary.
-- Unit tests with JUnit 5 and Mockito.
-- Running a Spring Boot application and MySQL with Docker Compose.
+## Próximos passos
 
----
+- Autenticação e autorização.
+- Testes de controller e integração.
+- Paginação e ordenação.
+- CI para rodar os testes e montar a imagem Docker.
 
-## Next steps
+## Licença
 
-- Add a global exception handler to return consistent JSON error bodies (missing resources already return `404` via `@ResponseStatus`).
-- Add controller/integration tests.
-- Add pagination and sorting.
-- Add authentication and authorization.
-- Add a CI workflow for tests and container builds.
-- Add screenshots of the dashboard.
+MIT. Veja [LICENSE](LICENSE).
 
----
-
-## License
-
-MIT. See [LICENSE](LICENSE).
-
-Developed by [Emanuel Vitor](https://github.com/evfernandes-dev).
+Desenvolvido por [Emanuel Vitor](https://github.com/evfernandes-dev).
