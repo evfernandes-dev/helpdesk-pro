@@ -104,7 +104,7 @@ class ChamadoServiceTest {
         Chamado atualizacao = new Chamado();
         atualizacao.setTitulo("Titulo Novo");
         atualizacao.setDescricao("Desc Nova");
-        atualizacao.setStatus(null); // Status não enviado no JSON
+        atualizacao.setStatus(null);
 
         when(chamadoRepository.findById(1L)).thenReturn(Optional.of(existente));
         when(chamadoRepository.save(any(Chamado.class))).thenAnswer(invocation -> invocation.getArgument(0));
