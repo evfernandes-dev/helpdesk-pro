@@ -11,8 +11,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-@Service // Marca como serviço (regras de negócio)
-@Transactional // Garante tudo roda numa transação
+@Service
+@Transactional
 public class ChamadoService {
 
     private final ChamadoRepository chamadoRepository;
@@ -21,9 +21,8 @@ public class ChamadoService {
         this.chamadoRepository = chamadoRepository;
     }
 
-    @Transactional(readOnly = true) // Só leitura, economiza um pouco
+    @Transactional(readOnly = true)
     public List<Chamado> listarTodos() {
-        // Mostra do mais novo pro mais antigo
         return chamadoRepository.findAllByOrderByDataCriacaoDesc();
     }
 
@@ -38,10 +37,8 @@ public class ChamadoService {
     }
 
     public Chamado criar(Chamado chamado) {
-        // Garante que não vai vir com id por engano
         chamado.setId(null);
         chamado.setDataCriacao(LocalDateTime.now());
-        // Se não passar status, já abre como ABERTO
         if (chamado.getStatus() == null) {
             chamado.setStatus(StatusChamado.ABERTO);
         }
@@ -49,11 +46,9 @@ public class ChamadoService {
     }
 
     public Chamado atualizar(Long id, Chamado chamadoAtualizado) {
-        // Busca ou manda 404 se não achar
         Chamado chamado = chamadoRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Chamado não encontrado com ID: " + id));
 
-        // Só atualiza se vier coisa válida (pra não sobrescrever com vazio)
         if (chamadoAtualizado.getTitulo() != null && !chamadoAtualizado.getTitulo().isBlank()) {
             chamado.setTitulo(chamadoAtualizado.getTitulo());
         }
@@ -64,7 +59,6 @@ public class ChamadoService {
             chamado.setStatus(chamadoAtualizado.getStatus());
         }
 
-        // Se fechou agora, marca a data de fechamento. Se reabriu, limpa ela
         if (StatusChamado.FECHADO.equals(chamado.getStatus()) && chamado.getDataFechamento() == null) {
             chamado.setDataFechamento(LocalDateTime.now());
         } else if (!StatusChamado.FECHADO.equals(chamado.getStatus())) {
@@ -75,7 +69,6 @@ public class ChamadoService {
     }
 
     public void deletar(Long id) {
-        // Valida antes pra devolver 404 certinho
         if (!chamadoRepository.existsById(id)) {
             throw new RecursoNaoEncontradoException("Chamado não encontrado com ID: " + id);
         }

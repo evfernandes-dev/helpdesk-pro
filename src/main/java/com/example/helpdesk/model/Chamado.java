@@ -5,12 +5,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
-@Entity // Diz pro JPA que isso vira uma tabela
+@Entity
 @Table(name = "chamados")
 public class Chamado {
 
-    @Id // Chave primária
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Gera o id sozinho
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "O título não pode estar em branco")
@@ -19,10 +19,10 @@ public class Chamado {
     private String titulo;
 
     @NotBlank(message = "A descrição não pode estar em branco")
-    @Column(nullable = false, columnDefinition = "TEXT") // Usa TEXT pra descrição maior
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String descricao;
 
-    @Enumerated(EnumType.STRING) // Salva o nome do enum no banco, não o número
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusChamado status;
 
@@ -33,7 +33,6 @@ public class Chamado {
     private LocalDateTime dataFechamento;
 
     public Chamado() {
-        // Já marca a data assim que cria o objeto
         this.dataCriacao = LocalDateTime.now();
     }
 
