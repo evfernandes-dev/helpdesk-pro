@@ -25,7 +25,7 @@ The application exposes CRUD endpoints for tickets, applies a simple status life
 ## Tech stack
 
 - **Language and framework:** Java 21, Spring Boot 3.4.5
-- **Persistence:** Spring Data JPA, Hibernate, MySQL 8.0
+- **Persistence:** Spring Data JPA, MySQL 8.0
 - **Validation:** Jakarta Bean Validation
 - **API documentation:** Springdoc OpenAPI 2.8.5 (Swagger UI)
 - **Build:** Maven
@@ -66,7 +66,7 @@ helpdesk-pro/
 └── README.md
 ```
 
-> A global exception handler is a planned improvement. Today, the service raises a custom exception for missing resources on update/delete, but it is not yet mapped to a specific HTTP status.
+> Missing resources on update/delete are mapped to `404 Not Found` with `@ResponseStatus`. A global exception handler with a consistent JSON error body is a planned improvement.
 
 ---
 
@@ -223,7 +223,7 @@ The tests do not cover the HTTP layer or the validation constraints yet.
 
 ## Next steps
 
-- Add a global exception handler to return consistent JSON errors and `404` for missing resources.
+- Add a global exception handler to return consistent JSON error bodies (missing resources already return `404` via `@ResponseStatus`).
 - Add controller/integration tests.
 - Add pagination and sorting.
 - Add authentication and authorization.
