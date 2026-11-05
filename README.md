@@ -1,129 +1,97 @@
-# Sistema de Chamados
+# Help Desk System
 
-API REST simples para gerenciamento de chamados de suporte, feita como projeto de estudo com **Java 21**, **Spring Boot 3.4**, **Spring Data JPA** e **MySQL**.
+Simple REST API for support ticket management built with Java 21, Spring Boot 3.4, Spring Data JPA and MySQL. It includes ticket CRUD, a status lifecycle, validation, Swagger UI and a static dashboard for testing the API in the browser.
 
-O projeto tem CRUD de chamados, um ciclo de status simples, validação dos dados e um dashboard estático para testar a API pelo navegador.
+> Study/portfolio project. It has no authentication and is not production ready.
 
-> **Status:** projeto de estudo/portfólio. Não é pronto para produção e ainda não tem autenticação.
-
-## Telas
+## Screenshots
 
 Dashboard:
 
-![Dashboard do sistema](docs/img/dashboard.png)
+![Dashboard](docs/img/dashboard.png)
 
-Documentação da API no Swagger:
+Swagger UI:
 
 ![Swagger UI](docs/img/swagger.png)
 
-## Funcionalidades
+## Features
 
-- Criar, listar, buscar por ID ou status, atualizar e excluir chamados.
-- Todo chamado novo começa com status `ABERTO` e recebe a data de criação.
-- Ao fechar um chamado, a data de fechamento é preenchida; ao reabrir, ela é limpa.
-- Validação de título e descrição com Bean Validation.
-- `GET /chamados/{id}` retorna `404 Not Found` quando o chamado não existe.
-- Documentação gerada com Springdoc OpenAPI (Swagger UI).
-- Dashboard estático em `src/main/resources/static`.
-- Docker Compose com MySQL, healthcheck e volume persistente.
-- Testes unitários da camada de serviço com JUnit 5 e Mockito.
+- Create, list, fetch by ID or status, update and delete tickets
+- New tickets start with status `ABERTO` and receive a creation date
+- Closing a ticket fills the closing date; reopening clears it
+- Bean Validation for title and description
+- `GET /chamados/{id}` returns `404 Not Found` when the ticket does not exist
+- OpenAPI documentation with Springdoc (Swagger UI)
+- Static dashboard in `src/main/resources/static`
+- Docker Compose with MySQL, healthcheck and persistent volume
+- Unit tests for the service layer with JUnit 5 and Mockito
 
-## Tecnologias
+## Stack
 
-- Java 21 e Spring Boot 3.4.5
-- Spring Data JPA, Hibernate e MySQL 8.0
-- Jakarta Bean Validation
-- Springdoc OpenAPI 2.8.5
-- Maven
-- JUnit 5 e Mockito
-- Docker e Docker Compose
+Java 21, Spring Boot 3.4.5, Spring Data JPA, Hibernate, MySQL 8, Jakarta Bean Validation, Springdoc OpenAPI, Maven, JUnit 5, Mockito, Docker and Docker Compose.
 
-## Como rodar
+## Running
 
-### Opção 1: Docker
+### Docker
 
-Pré-requisitos: Docker e Docker Compose.
+Requirements: Docker and Docker Compose.
 
-1. Crie o arquivo de ambiente:
+```powershell
+Copy-Item .env.example .env
+docker compose up --build -d
+```
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+- Dashboard: `http://localhost:8080`
+- Swagger: `http://localhost:8080/swagger-ui.html`
+- API: `http://localhost:8080/chamados`
 
-2. Suba os containers:
+```bash
+docker compose down
+```
 
-   ```bash
-   docker compose up --build -d
-   ```
+The `.env.example` contains local values only. Never commit `.env`.
 
-3. Acesse:
+### Local
 
-   - Dashboard: `http://localhost:8080`
-   - Swagger: `http://localhost:8080/swagger-ui.html`
-   - API: `http://localhost:8080/chamados`
+Requirements: Java 21, Maven and MySQL 8.
 
-4. Para parar:
+```sql
+CREATE DATABASE helpdesk_pro;
+```
 
-   ```bash
-   docker compose down
-   ```
-
-O `.env.example` tem apenas valores locais. Não commite o `.env`.
-
-### Opção 2: local
-
-Pré-requisitos: Java 21, Maven e MySQL 8.
-
-1. Crie o banco:
-
-   ```sql
-   CREATE DATABASE helpdesk_pro;
-   ```
-
-2. Configure a conexão no PowerShell:
-
-   ```powershell
-   $env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3306/helpdesk_pro?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo"
-   $env:SPRING_DATASOURCE_USERNAME = "root"
-   $env:SPRING_DATASOURCE_PASSWORD = "sua_senha"
-   ```
-
-3. Inicie a aplicação:
-
-   ```bash
-   mvn spring-boot:run
-   ```
+```powershell
+$env:SPRING_DATASOURCE_URL = "jdbc:mysql://localhost:3306/helpdesk_pro?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo"
+$env:SPRING_DATASOURCE_USERNAME = "root"
+$env:SPRING_DATASOURCE_PASSWORD = "your_password"
+mvn spring-boot:run
+```
 
 ## Endpoints
 
-Base: `http://localhost:8080`
+Base URL: `http://localhost:8080`
 
-| Método | Rota | Descrição |
-| :--- | :--- | :--- |
-| `GET` | `/chamados` | Lista os chamados, do mais novo para o mais antigo |
-| `GET` | `/chamados/{id}` | Busca um chamado pelo ID |
-| `GET` | `/chamados/status/{status}` | Filtra por status |
-| `POST` | `/chamados` | Cria um chamado |
-| `PUT` | `/chamados/{id}` | Atualiza um chamado |
-| `DELETE` | `/chamados/{id}` | Exclui um chamado |
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/chamados` | List tickets, newest first |
+| `GET` | `/chamados/{id}` | Fetch a ticket by ID |
+| `GET` | `/chamados/status/{status}` | Filter by status |
+| `POST` | `/chamados` | Create a ticket |
+| `PUT` | `/chamados/{id}` | Update a ticket |
+| `DELETE` | `/chamados/{id}` | Delete a ticket |
 
-Status possíveis: `ABERTO`, `EM_ANDAMENTO` e `FECHADO`.
-
-### Exemplo de criação
+Statuses: `ABERTO`, `EM_ANDAMENTO`, `FECHADO`.
 
 ```http
 POST /chamados
 Content-Type: application/json
-```
 
-```json
 {
   "titulo": "Erro ao acessar o sistema",
   "descricao": "O usuário recebe erro 500 ao tentar fazer login."
 }
 ```
 
-Resposta (`201 Created`):
+Response (`201 Created`):
 
 ```json
 {
@@ -136,45 +104,36 @@ Resposta (`201 Created`):
 }
 ```
 
-## Estrutura
+## Structure
 
 ```text
 src/main/java/com/example/helpdesk/
-├── controller/   # Endpoints REST
-├── exception/    # Exceção de recurso não encontrado
-├── model/        # Entidade Chamado e enum StatusChamado
-├── repository/   # Interfaces do Spring Data JPA
-└── service/      # Regras de negócio
+├── controller/   REST endpoints
+├── exception/    Not-found exception
+├── model/        Chamado entity and StatusChamado enum
+├── repository/   Spring Data JPA interfaces
+└── service/      Business rules
 ```
 
-A entidade `Chamado` também é usada como corpo das requisições para manter o projeto simples. Em um projeto maior, eu usaria DTOs separados.
+The `Chamado` entity is also used as the request body to keep the project simple. A larger project would use separate DTOs.
 
-## Testes
+## Tests
 
 ```bash
 mvn test
 ```
 
-A suíte atual tem 4 testes da camada de serviço: listagem, criação, fechamento e atualização sem alterar o status. A camada HTTP ainda não tem testes.
+Four service-layer tests cover listing, creation, closing and updating without changing the status. The HTTP layer has no tests yet.
 
-## O que pratiquei
+## Next steps
 
-- Organização em camadas com controller, service e repository.
-- Mapeamento JPA, queries derivadas e transações.
-- Validação com Bean Validation.
-- Testes unitários com JUnit 5 e Mockito.
-- Spring Boot e MySQL rodando com Docker Compose.
-- Documentação de API com Swagger.
+- Authentication and authorization
+- Controller and integration tests
+- Pagination and sorting
+- CI to run tests and build the Docker image
 
-## Próximos passos
+## License
 
-- Autenticação e autorização.
-- Testes de controller e integração.
-- Paginação e ordenação.
-- CI para rodar os testes e montar a imagem Docker.
+MIT. See [LICENSE](LICENSE).
 
-## Licença
-
-MIT. Veja [LICENSE](LICENSE).
-
-Desenvolvido por [Emanuel Vitor](https://github.com/evfernandes-dev).
+Built by [Emanuel Vitor](https://github.com/evfernandes-dev).
