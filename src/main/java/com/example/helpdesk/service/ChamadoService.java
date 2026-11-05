@@ -1,11 +1,12 @@
 package com.example.helpdesk.service;
 
-import com.example.helpdesk.exception.RecursoNaoEncontradoException;
 import com.example.helpdesk.model.Chamado;
 import com.example.helpdesk.model.StatusChamado;
 import com.example.helpdesk.repository.ChamadoRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -47,7 +48,7 @@ public class ChamadoService {
 
     public Chamado atualizar(Long id, Chamado chamadoAtualizado) {
         Chamado chamado = chamadoRepository.findById(id)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Chamado não encontrado com ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chamado não encontrado com ID: " + id));
 
         if (chamadoAtualizado.getTitulo() != null && !chamadoAtualizado.getTitulo().isBlank()) {
             chamado.setTitulo(chamadoAtualizado.getTitulo());
@@ -70,7 +71,7 @@ public class ChamadoService {
 
     public void deletar(Long id) {
         if (!chamadoRepository.existsById(id)) {
-            throw new RecursoNaoEncontradoException("Chamado não encontrado com ID: " + id);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chamado não encontrado com ID: " + id);
         }
         chamadoRepository.deleteById(id);
     }

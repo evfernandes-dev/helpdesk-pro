@@ -109,7 +109,6 @@ Response (`201 Created`):
 ```text
 src/main/java/com/example/helpdesk/
 ├── controller/   REST endpoints
-├── exception/    Not-found exception
 ├── model/        Chamado entity and StatusChamado enum
 ├── repository/   Spring Data JPA interfaces
 └── service/      Business rules
