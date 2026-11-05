@@ -1,6 +1,6 @@
 # Help Desk System
 
-Simple REST API for support ticket management built with Java 21, Spring Boot 3.4, Spring Data JPA and MySQL. It includes ticket CRUD, a status lifecycle, validation, Swagger UI and a static dashboard for testing the API in the browser.
+Simple REST API for support ticket management built with Java 21, Spring Boot 3.4, Spring Data JPA and MySQL. It includes ticket CRUD, a status lifecycle, validation and Swagger UI.
 
 > Study/portfolio project. It has no authentication and is not production ready.
 
@@ -12,7 +12,6 @@ Simple REST API for support ticket management built with Java 21, Spring Boot 3.
 - Bean Validation for title and description
 - `GET /chamados/{id}` returns `404 Not Found` when the ticket does not exist
 - OpenAPI documentation with Springdoc (Swagger UI)
-- Static dashboard in `src/main/resources/static`
 - Docker Compose with MySQL, healthcheck and persistent volume
 - Unit tests for the service layer with JUnit 5 and Mockito
 
@@ -31,7 +30,6 @@ Copy-Item .env.example .env
 docker compose up --build -d
 ```
 
-- Dashboard: `http://localhost:8080`
 - Swagger: `http://localhost:8080/swagger-ui.html`
 - API: `http://localhost:8080/chamados`
 
