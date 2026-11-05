@@ -4,16 +4,6 @@ Simple REST API for support ticket management built with Java 21, Spring Boot 3.
 
 > Study/portfolio project. It has no authentication and is not production ready.
 
-## Screenshots
-
-Dashboard:
-
-![Dashboard](docs/img/dashboard.png)
-
-Swagger UI:
-
-![Swagger UI](docs/img/swagger.png)
-
 ## Features
 
 - Create, list, fetch by ID or status, update and delete tickets
