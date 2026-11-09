@@ -34,7 +34,7 @@ public class ChamadoService {
 
     @Transactional(readOnly = true)
     public List<Chamado> buscarPorStatus(StatusChamado status) {
-        return chamadoRepository.findByStatus(status);
+        return chamadoRepository.findByStatusOrderByDataCriacaoDesc(status);
     }
 
     public Chamado criar(Chamado chamado) {
@@ -57,16 +57,29 @@ public class ChamadoService {
             chamado.setDescricao(chamadoAtualizado.getDescricao());
         }
         if (chamadoAtualizado.getStatus() != null) {
-            chamado.setStatus(chamadoAtualizado.getStatus());
-        }
-
-        if (StatusChamado.FECHADO.equals(chamado.getStatus()) && chamado.getDataFechamento() == null) {
-            chamado.setDataFechamento(LocalDateTime.now());
-        } else if (!StatusChamado.FECHADO.equals(chamado.getStatus())) {
-            chamado.setDataFechamento(null);
+            aplicarStatus(chamado, chamadoAtualizado.getStatus());
         }
 
         return chamadoRepository.save(chamado);
+    }
+
+    public Chamado atualizarStatus(Long id, StatusChamado novoStatus) {
+        Chamado chamado = chamadoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chamado não encontrado com ID: " + id));
+
+        aplicarStatus(chamado, novoStatus);
+        return chamadoRepository.save(chamado);
+    }
+
+    private void aplicarStatus(Chamado chamado, StatusChamado novoStatus) {
+        chamado.setStatus(novoStatus);
+        if (StatusChamado.FECHADO.equals(novoStatus)) {
+            if (chamado.getDataFechamento() == null) {
+                chamado.setDataFechamento(LocalDateTime.now());
+            }
+        } else {
+            chamado.setDataFechamento(null);
+        }
     }
 
     public void deletar(Long id) {

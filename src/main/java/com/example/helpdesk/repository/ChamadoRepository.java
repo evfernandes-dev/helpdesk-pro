@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface ChamadoRepository extends JpaRepository<Chamado, Long> {
-    List<Chamado> findByStatus(StatusChamado status);
+    List<Chamado> findByStatusOrderByDataCriacaoDesc(StatusChamado status);
     List<Chamado> findAllByOrderByDataCriacaoDesc();
 }
