@@ -50,6 +50,12 @@ public class ChamadoController {
         return ResponseEntity.ok(chamadoSalvo);
     }
 
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Chamado> atualizarStatus(@PathVariable Long id, @RequestParam StatusChamado status) {
+        Chamado chamadoSalvo = chamadoService.atualizarStatus(id, status);
+        return ResponseEntity.ok(chamadoSalvo);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
         chamadoService.deletar(id);
