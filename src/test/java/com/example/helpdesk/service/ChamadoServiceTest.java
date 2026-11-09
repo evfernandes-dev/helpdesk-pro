@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -90,6 +91,51 @@ class ChamadoServiceTest {
         assertNotNull(atualizado.getDataFechamento());
         verify(chamadoRepository, times(1)).findById(1L);
         verify(chamadoRepository, times(1)).save(any(Chamado.class));
+    }
+
+    @Test
+    void deveAtualizarStatusParaFechado() {
+        Chamado existente = new Chamado();
+        existente.setId(1L);
+        existente.setTitulo("Notebook sem internet");
+        existente.setDescricao("Wi-Fi não conecta");
+        existente.setStatus(StatusChamado.ABERTO);
+
+        when(chamadoRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(chamadoRepository.save(any(Chamado.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Chamado atualizado = chamadoService.atualizarStatus(1L, StatusChamado.FECHADO);
+
+        assertEquals(StatusChamado.FECHADO, atualizado.getStatus());
+        assertNotNull(atualizado.getDataFechamento());
+        verify(chamadoRepository, times(1)).save(any(Chamado.class));
+    }
+
+    @Test
+    void deveReabrirChamadoLimpandoDataFechamento() {
+        Chamado existente = new Chamado();
+        existente.setId(1L);
+        existente.setTitulo("Impressora sem toner");
+        existente.setDescricao("Substituir toner");
+        existente.setStatus(StatusChamado.FECHADO);
+        existente.setDataFechamento(LocalDateTime.now().minusDays(1));
+
+        when(chamadoRepository.findById(1L)).thenReturn(Optional.of(existente));
+        when(chamadoRepository.save(any(Chamado.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Chamado atualizado = chamadoService.atualizarStatus(1L, StatusChamado.EM_ANDAMENTO);
+
+        assertEquals(StatusChamado.EM_ANDAMENTO, atualizado.getStatus());
+        assertNull(atualizado.getDataFechamento());
+    }
+
+    @Test
+    void deveLancarErroAoAtualizarStatusDeChamadoInexistente() {
+        when(chamadoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ResponseStatusException.class,
+                () -> chamadoService.atualizarStatus(99L, StatusChamado.FECHADO));
+        verify(chamadoRepository, never()).save(any(Chamado.class));
     }
 
     @Test
