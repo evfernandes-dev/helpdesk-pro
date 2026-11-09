@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Help Desk — Chamados</title>
+  <link rel="icon" href="data:,">
+  <style>
+    :root {
+      color-scheme: light;
+      --fundo: #f5f4f0;
+      --superficie: #ffffff;
+      --superficie-2: #fbfaf7;
+      --borda: #e3e0d8;
+      --borda-forte: #d3cfc5;
+      --texto: #201f1c;
+      --texto-2: #6b675f;
+      --texto-3: #3f3b35;
+      --accent: #0f766e;
+      --accent-escuro: #0b5e58;
+      --perigo: #b42318;
+      --perigo-suave: #fef3f2;
+      --raio: 10px;
+      --sombra: 0 1px 2px rgba(32, 31, 28, .04), 0 8px 24px -16px rgba(32, 31, 28, .28);
+      --fonte: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--fundo);
+      color: var(--texto);
+      font-family: var(--fonte);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    ::selection { background: #c9ebe7; color: #10312e; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    input, textarea, button { font: inherit; color: inherit; }
+    input, textarea { caret-color: var(--accent); }
+
+    .pagina {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 24px 72px;
+    }
+
+    .cabecalho {
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--borda);
+    }
+    .cabecalho h1 {
+      margin: 0;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -.03em;
+    }
+    .cabecalho p {
+      margin: 4px 0 0;
+      color: var(--texto-2);
+      font-size: 13.5px;
+    }
+
+    .cartao {
+      background: var(--superficie);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      box-shadow: var(--sombra);
+    }
+
+    .criar {
+      margin-top: 24px;
+      padding: 20px;
+    }
+    .criar h2 {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -.01em;
+    }
+    .criar .ajuda {
+      margin: 2px 0 16px;
+      color: var(--texto-2);
+      font-size: 13px;
+    }
+
+    .campo { display: grid; gap: 6px; }
+    .campo + .campo { margin-top: 14px; }
+    .campo label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #4a463f;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 9px 11px;
+      background: var(--superficie);
+      border: 1px solid var(--borda-forte);
+      border-radius: 8px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    input::placeholder, textarea::placeholder { color: #757068; }
+    input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 118, 110, .15);
+    }
+    textarea { min-height: 78px; resize: vertical; }
+
+    .form-rodape {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .botao {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 40px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--texto);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .botao:disabled { opacity: .55; cursor: not-allowed; }
+    .botao.primario { min-width: 132px; background: var(--accent); color: #fff; }
+    .botao.primario:hover:not(:disabled) { background: var(--accent-escuro); }
+    .botao.secundario { background: var(--superficie); border-color: var(--borda-forte); }
+    .botao.secundario:hover:not(:disabled) { background: var(--superficie-2); border-color: #b9b4a9; }
+    .botao.perigo { color: var(--perigo); }
+    .botao.perigo:hover:not(:disabled) { background: var(--perigo-suave); }
+
+    .lista-secao { margin-top: 32px; }
+    .lista-cabecalho {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .lista-cabecalho h2 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -.01em;
+    }
+    .resumo {
+      margin: 0;
+      color: var(--texto-2);
+      font-size: 12.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .filtros {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .filtro {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 32px;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      border-radius: 7px;
+      background: transparent;
+      color: var(--texto-2);
+      font-size: 13px;
+      font-weight: 550;
+      cursor: pointer;
+      transition: background-color .15s ease, color .15s ease;
+    }
+    .filtro:hover { background: #ece9e2; color: var(--texto); }
+    .filtro[aria-pressed="true"] {
+      background: var(--superficie);
+      border-color: var(--borda-forte);
+      color: var(--texto);
+      box-shadow: 0 1px 2px rgba(32, 31, 28, .05);
+    }
+    .contagem {
+      font-size: 11.5px;
+      font-variant-numeric: tabular-nums;
+      opacity: .7;
+    }
+
+    .chamados { display: grid; gap: 10px; }
+    .chamado {
+      padding: 16px 18px;
+      background: var(--superficie);
+      border: 1px solid var(--borda);
+      border-radius: var(--raio);
+      box-shadow: var(--sombra);
+    }
+    .chamado-cabecalho {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .chamado-cabecalho h3 {
+      margin: 0;
+      font-size: 14.5px;
+      font-weight: 600;
+      letter-spacing: -.005em;
+      overflow-wrap: anywhere;
+    }
+    .descricao {
+      max-width: 70ch;
+      margin: 8px 0 0;
+      color: var(--texto-3);
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .chamado-rodape {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid #efede7;
+    }
+    .meta {
+      margin: 0;
+      color: var(--texto-2);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+    .acoes { display: flex; flex-wrap: wrap; gap: 4px; }
+    .acoes .botao { min-height: 32px; padding: 0 10px; font-size: 12.5px; }
+
+    .status {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+    .status::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    .status-aberto { background: #e0f2fe; color: #075985; }
+    .status-andamento { background: #fef3c7; color: #92400e; }
+    .status-fechado { background: #dcfce7; color: #166534; }
+
+    .vazio {
+      padding: 32px 20px;
+      text-align: center;
+      background: var(--superficie-2);
+      border: 1px dashed var(--borda-forte);
+      border-radius: var(--raio);
+    }
+    .vazio-titulo { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+    .vazio-texto { margin: 0; color: var(--texto-2); font-size: 13px; }
+
+    .erro-carga {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--perigo-suave);
+      border: 1px solid #fecdca;
+      border-radius: var(--raio);
+      color: #7a271a;
+      font-size: 13px;
+    }
+    .erro-carga .botao { flex: none; }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      max-width: min(390px, calc(100vw - 40px));
+      padding: 11px 14px;
+      background: var(--superficie);
+      border: 1px solid var(--borda-forte);
+      border-radius: 9px;
+      box-shadow: 0 4px 12px rgba(32, 31, 28, .1), 0 16px 36px -20px rgba(32, 31, 28, .45);
+      font-size: 13px;
+      animation: toast-entrada .18s ease-out;
+    }
+    .toast::before {
+      content: "";
+      flex: none;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .toast.erro::before { background: var(--perigo); }
+    .toast[hidden] { display: none; }
+    @keyframes toast-entrada {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .esqueleto-linha {
+      height: 12px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, #edeae3 25%, #f6f4ef 37%, #edeae3 63%);
+      background-size: 400% 100%;
+      animation: brilho 1.4s ease infinite;
+    }
+    .esqueleto-linha:last-child { margin-bottom: 0; }
+    @keyframes brilho {
+      0% { background-position: 100% 0; }
+      100% { background-position: 0 0; }
+    }
+
+    @media (max-width: 560px) {
+      .pagina { padding: 24px 16px 48px; }
+      .lista-cabecalho { flex-direction: column; gap: 2px; }
+      .form-rodape .botao { width: 100%; }
+      .chamado-rodape { align-items: flex-start; }
+      .acoes { width: 100%; }
+      .toast { left: 16px; right: 16px; bottom: 16px; max-width: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="pagina">
+    <header class="cabecalho">
+      <h1>Help Desk</h1>
+      <p>Chamados de suporte técnico</p>
+    </header>
+
+    <section class="cartao criar" aria-labelledby="titulo-criar">
+      <h2 id="titulo-criar">Abrir chamado</h2>
+      <p class="ajuda">Descreva o problema e acompanhe o atendimento abaixo.</p>
+      <form id="form-chamado" novalidate>
+        <div class="campo">
+          <label for="titulo">Título</label>
+          <input id="titulo" name="titulo" maxlength="255" required placeholder="Resumo do problema">
+        </div>
+        <div class="campo">
+          <label for="descricao">Descrição</label>
+          <textarea id="descricao" name="descricao" required placeholder="O que aconteceu, onde e desde quando?"></textarea>
+        </div>
+        <div class="form-rodape">
+          <button type="submit" class="botao primario">Abrir chamado</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="lista-secao" aria-labelledby="titulo-lista">
+      <div class="lista-cabecalho">
+        <h2 id="titulo-lista">Chamados</h2>
+        <p class="resumo" id="resumo"></p>
+      </div>
+
+      <div class="filtros" role="group" aria-label="Filtrar chamados">
+        <button type="button" class="filtro" data-filtro="TODOS" aria-pressed="true">
+          Todos <span class="contagem" data-contagem="TODOS">0</span>
+        </button>
+        <button type="button" class="filtro" data-filtro="ABERTO" aria-pressed="false">
+          Abertos <span class="contagem" data-contagem="ABERTO">0</span>
+        </button>
+        <button type="button" class="filtro" data-filtro="EM_ANDAMENTO" aria-pressed="false">
+          Em andamento <span class="contagem" data-contagem="EM_ANDAMENTO">0</span>
+        </button>
+        <button type="button" class="filtro" data-filtro="FECHADO" aria-pressed="false">
+          Fechados <span class="contagem" data-contagem="FECHADO">0</span>
+        </button>
+      </div>
+
+      <div class="chamados" id="lista" aria-busy="true"></div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script>
+    const API = "/chamados";
+
+    const STATUS = {
+      ABERTO: { rotulo: "Aberto", classe: "aberto" },
+      EM_ANDAMENTO: { rotulo: "Em andamento", classe: "andamento" },
+      FECHADO: { rotulo: "Fechado", classe: "fechado" }
+    };
+
+    const estado = {
+      chamados: [],
+      filtro: "TODOS",
+      carregando: true,
+      erroCarga: null
+    };
+
+    const form = document.getElementById("form-chamado");
+    const campoTitulo = document.getElementById("titulo");
+    const campoDescricao = document.getElementById("descricao");
+    const botaoCriar = form.querySelector('button[type="submit"]');
+    const toast = document.getElementById("toast");
+    const lista = document.getElementById("lista");
+    const resumo = document.getElementById("resumo");
+    const filtros = document.querySelector(".filtros");
+
+    const formatadorData = new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+    let timerFeedback = null;
+
+    function escapar(valor) {
+      return String(valor).replace(/[&<>"']/g, function (caractere) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[caractere];
+      });
+    }
+
+    function formatarData(dataIso) {
+      if (!dataIso) return "";
+      return formatadorData.format(new Date(dataIso));
+    }
+
+    function mostrarFeedback(mensagem, tipo) {
+      clearTimeout(timerFeedback);
+      toast.textContent = mensagem;
+      toast.className = "toast " + (tipo || "");
+      toast.hidden = false;
+      timerFeedback = setTimeout(function () {
+        toast.hidden = true;
+      }, 5000);
+    }
+
+    async function requisicao(url, opcoes) {
+      const resposta = await fetch(url, opcoes);
+      if (!resposta.ok) {
+        let mensagem = "Não foi possível concluir a ação.";
+        try {
+          const dados = await resposta.json();
+          if (dados && dados.erro) mensagem = dados.erro;
+        } catch (erro) {
+          // mantém a mensagem padrão
+        }
+        throw new Error(mensagem);
+      }
+      if (resposta.status === 204) return null;
+      return resposta.json();
+    }
+
+    function chamadosFiltrados() {
+      if (estado.filtro === "TODOS") return estado.chamados;
+      return estado.chamados.filter(function (chamado) {
+        return chamado.status === estado.filtro;
+      });
+    }
+
+    function atualizarFiltros() {
+      const contagens = { TODOS: estado.chamados.length, ABERTO: 0, EM_ANDAMENTO: 0, FECHADO: 0 };
+      estado.chamados.forEach(function (chamado) {
+        if (contagens[chamado.status] !== undefined) contagens[chamado.status] += 1;
+      });
+
+      document.querySelectorAll("[data-contagem]").forEach(function (elemento) {
+        elemento.textContent = contagens[elemento.dataset.contagem];
+      });
+
+      filtros.querySelectorAll("[data-filtro]").forEach(function (botao) {
+        botao.setAttribute("aria-pressed", String(botao.dataset.filtro === estado.filtro));
+      });
+    }
+
+    function acoesDoChamado(chamado) {
+      const id = chamado.id;
+      const acoes = [];
+
+      if (chamado.status === "ABERTO") {
+        acoes.push('<button type="button" class="botao secundario" data-acao="status" data-id="' + id + '" data-status="EM_ANDAMENTO">Iniciar</button>');
+      }
+      if (chamado.status === "EM_ANDAMENTO") {
+        acoes.push('<button type="button" class="botao secundario" data-acao="status" data-id="' + id + '" data-status="ABERTO">Voltar à fila</button>');
+      }
+      if (chamado.status !== "FECHADO") {
+        acoes.push('<button type="button" class="botao secundario" data-acao="status" data-id="' + id + '" data-status="FECHADO">Fechar</button>');
+      } else {
+        acoes.push('<button type="button" class="botao secundario" data-acao="status" data-id="' + id + '" data-status="ABERTO">Reabrir</button>');
+      }
+      acoes.push('<button type="button" class="botao perigo" data-acao="excluir" data-id="' + id + '">Excluir</button>');
+
+      return acoes.join("");
+    }
+
+    function cartaoDoChamado(chamado) {
+      const status = STATUS[chamado.status];
+      const meta = ["#" + chamado.id, "Criado em " + formatarData(chamado.dataCriacao)];
+      if (chamado.dataFechamento) {
+        meta.push("Fechado em " + formatarData(chamado.dataFechamento));
+      }
+
+      return [
+        '<article class="chamado">',
+        '  <div class="chamado-cabecalho">',
+        '    <h3>' + escapar(chamado.titulo) + '</h3>',
+        '    <span class="status status-' + status.classe + '">' + status.rotulo + '</span>',
+        '  </div>',
+        '  <p class="descricao">' + escapar(chamado.descricao) + '</p>',
+        '  <div class="chamado-rodape">',
+        '    <p class="meta">' + meta.join(" · ") + '</p>',
+        '    <div class="acoes">' + acoesDoChamado(chamado) + '</div>',
+        '  </div>',
+        '</article>'
+      ].join("\n");
+    }
+
+    function renderizarEsqueleto() {
+      lista.setAttribute("aria-busy", "true");
+      lista.innerHTML = [0, 1, 2].map(function () {
+        return [
+          '<div class="chamado" aria-hidden="true">',
+          '  <div class="esqueleto-linha" style="width: 42%"></div>',
+          '  <div class="esqueleto-linha" style="width: 88%"></div>',
+          '  <div class="esqueleto-linha" style="width: 30%; margin-bottom: 0"></div>',
+          '</div>'
+        ].join("\n");
+      }).join("\n");
+    }
+
+    function renderizarErro() {
+      lista.setAttribute("aria-busy", "false");
+      lista.innerHTML = [
+        '<div class="erro-carga">',
+        '  <span>' + escapar(estado.erroCarga) + '</span>',
+        '  <button type="button" class="botao secundario" data-recarregar>Tentar novamente</button>',
+        '</div>'
+      ].join("\n");
+    }
+
+    function renderizarVazio() {
+      const mensagens = {
+        TODOS: ["Nenhum chamado registrado.", "Use o formulário acima para abrir o primeiro chamado."],
+        ABERTO: ["Nenhum chamado aberto.", "A fila está vazia — novos chamados aparecem aqui."],
+        EM_ANDAMENTO: ["Nenhum atendimento em andamento.", "Inicie um chamado aberto para trabalhar nele."],
+        FECHADO: ["Nenhum chamado fechado.", "Os chamados concluídos ficam guardados aqui."]
+      };
+      const mensagem = mensagens[estado.filtro];
+      lista.innerHTML = [
+        '<div class="vazio">',
+        '  <p class="vazio-titulo">' + mensagem[0] + '</p>',
+        '  <p class="vazio-texto">' + mensagem[1] + '</p>',
+        '</div>'
+      ].join("\n");
+    }
+
+    function renderizar() {
+      atualizarFiltros();
+
+      if (estado.carregando) {
+        renderizarEsqueleto();
+        return;
+      }
+      if (estado.erroCarga) {
+        renderizarErro();
+        return;
+      }
+
+      const chamados = chamadosFiltrados();
+      lista.setAttribute("aria-busy", "false");
+      resumo.textContent = chamados.length === 1
+        ? "1 chamado · mais recentes primeiro"
+        : chamados.length + " chamados · mais recentes primeiro";
+
+      if (!chamados.length) {
+        renderizarVazio();
+        return;
+      }
+      lista.innerHTML = chamados.map(cartaoDoChamado).join("\n");
+    }
+
+    async function carregar() {
+      estado.carregando = true;
+      estado.erroCarga = null;
+      renderizar();
+      try {
+        estado.chamados = await requisicao(API);
+      } catch (erro) {
+        estado.chamados = [];
+        estado.erroCarga = erro.message;
+      } finally {
+        estado.carregando = false;
+        renderizar();
+      }
+    }
+
+    form.addEventListener("submit", async function (evento) {
+      evento.preventDefault();
+
+      const titulo = campoTitulo.value.trim();
+      const descricao = campoDescricao.value.trim();
+      if (!titulo || !descricao) {
+        mostrarFeedback("Preencha o título e a descrição do chamado.", "erro");
+        (titulo ? campoDescricao : campoTitulo).focus();
+        return;
+      }
+
+      botaoCriar.disabled = true;
+      botaoCriar.textContent = "Abrindo…";
+      try {
+        await requisicao(API, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ titulo: titulo, descricao: descricao })
+        });
+        form.reset();
+        mostrarFeedback("Chamado aberto com sucesso.", "sucesso");
+        await carregar();
+        campoTitulo.focus();
+      } catch (erro) {
+        mostrarFeedback(erro.message, "erro");
+      } finally {
+        botaoCriar.disabled = false;
+        botaoCriar.textContent = "Abrir chamado";
+      }
+    });
+
+    filtros.addEventListener("click", function (evento) {
+      const botao = evento.target.closest("button[data-filtro]");
+      if (!botao) return;
+      estado.filtro = botao.dataset.filtro;
+      renderizar();
+    });
+
+    lista.addEventListener("click", async function (evento) {
+      if (evento.target.closest("[data-recarregar]")) {
+        carregar();
+        return;
+      }
+
+      const botao = evento.target.closest("button[data-acao]");
+      if (!botao) return;
+
+      const id = botao.dataset.id;
+      const acao = botao.dataset.acao;
+
+      if (acao === "excluir") {
+        const chamado = estado.chamados.find(function (item) {
+          return String(item.id) === id;
+        });
+        const nome = chamado ? '"' + chamado.titulo + '"' : "este chamado";
+        if (!window.confirm("Excluir o chamado #" + id + " — " + nome + "?")) return;
+
+        botao.disabled = true;
+        try {
+          await requisicao(API + "/" + id, { method: "DELETE" });
+          mostrarFeedback("Chamado #" + id + " excluído.", "sucesso");
+          await carregar();
+        } catch (erro) {
+          mostrarFeedback(erro.message, "erro");
+          botao.disabled = false;
+        }
+        return;
+      }
+
+      const novoStatus = botao.dataset.status;
+      botao.disabled = true;
+      try {
+        await requisicao(API + "/" + id + "/status?status=" + encodeURIComponent(novoStatus), { method: "PATCH" });
+        const rotulos = { ABERTO: "reaberto", EM_ANDAMENTO: "iniciado", FECHADO: "fechado" };
+        mostrarFeedback("Chamado #" + id + " " + rotulos[novoStatus] + ".", "sucesso");
+        await carregar();
+      } catch (erro) {
+        mostrarFeedback(erro.message, "erro");
+        botao.disabled = false;
+      }
+    });
+
+    carregar();
+  </script>
+</body>
+</html>
