@@ -1,43 +1,37 @@
-# Help Desk System
+# Help Desk
 
-Simple REST API for support ticket management built with Java 21, Spring Boot 3.4, Spring Data JPA and MySQL. It includes ticket CRUD, a status lifecycle, validation and Swagger UI.
+Small support ticket app with a REST API and a built-in web page.
+Built with Java 21, Spring Boot 3.4, Spring Data JPA and MySQL.
 
-> Study/portfolio project. It has no authentication and is not production ready.
+> Study project. No authentication; not production ready.
 
 ## Features
 
-- Create, list, fetch by ID or status, update and delete tickets
-- New tickets start with status `ABERTO` and receive a creation date
-- Closing a ticket fills the closing date; reopening clears it
-- Bean Validation for title and description
-- `GET /chamados/{id}` returns `404 Not Found` when the ticket does not exist
-- OpenAPI documentation with Springdoc (Swagger UI)
-- Docker Compose with MySQL, healthcheck and persistent volume
-- Unit tests for the service layer with JUnit 5 and Mockito
+- Create, list, filter, update and delete tickets
+- Change only the status with `PATCH /chamados/{id}/status?status=FECHADO`
+- Closing a ticket sets the closing date; reopening clears it
+- Validation for title and description
+- Simple JSON errors, e.g. `{ "erro": "Chamado não encontrado com ID: 99" }`
+- Web page at `http://localhost:8080/` to open, filter and manage tickets
 
 ## Stack
 
-Java 21, Spring Boot 3.4.5, Spring Data JPA, Hibernate, MySQL 8, Jakarta Bean Validation, Springdoc OpenAPI, Maven, JUnit 5, Mockito, Docker and Docker Compose.
+Java 21, Spring Boot 3.4.5, Spring Data JPA, MySQL 8, Maven, JUnit 5, Mockito, Docker Compose and plain HTML/CSS/JS.
 
 ## Running
 
 ### Docker
-
-Requirements: Docker and Docker Compose.
 
 ```powershell
 Copy-Item .env.example .env
 docker compose up --build -d
 ```
 
-- Swagger: `http://localhost:8080/swagger-ui.html`
-- API: `http://localhost:8080/chamados`
+Open `http://localhost:8080/`.
 
 ```bash
 docker compose down
 ```
-
-The `.env.example` contains local values only. Never commit `.env`.
 
 ### Local
 
@@ -62,9 +56,10 @@ Base URL: `http://localhost:8080`
 | --- | --- | --- |
 | `GET` | `/chamados` | List tickets, newest first |
 | `GET` | `/chamados/{id}` | Fetch a ticket by ID |
-| `GET` | `/chamados/status/{status}` | Filter by status |
+| `GET` | `/chamados/status/{status}` | Filter by status, newest first |
 | `POST` | `/chamados` | Create a ticket |
 | `PUT` | `/chamados/{id}` | Update a ticket |
+| `PATCH` | `/chamados/{id}/status?status=FECHADO` | Change only the status |
 | `DELETE` | `/chamados/{id}` | Delete a ticket |
 
 Statuses: `ABERTO`, `EM_ANDAMENTO`, `FECHADO`.
@@ -79,48 +74,12 @@ Content-Type: application/json
 }
 ```
 
-Response (`201 Created`):
-
-```json
-{
-  "id": 1,
-  "titulo": "Erro ao acessar o sistema",
-  "descricao": "O usuário recebe erro 500 ao tentar fazer login.",
-  "status": "ABERTO",
-  "dataCriacao": "2026-10-24T15:00:00",
-  "dataFechamento": null
-}
-```
-
-## Structure
-
-```text
-src/main/java/com/example/helpdesk/
-├── controller/   REST endpoints
-├── model/        Chamado entity and StatusChamado enum
-├── repository/   Spring Data JPA interfaces
-└── service/      Business rules
-```
-
-The `Chamado` entity is also used as the request body to keep the project simple. A larger project would use separate DTOs.
-
 ## Tests
 
 ```bash
 mvn test
 ```
 
-Four service-layer tests cover listing, creation, closing and updating without changing the status. The HTTP layer has no tests yet.
-
-## Next steps
-
-- Authentication and authorization
-- Controller and integration tests
-- Pagination and sorting
-- CI to run tests and build the Docker image
-
 ## License
 
 MIT. See [LICENSE](LICENSE).
-
-Built by [Emanuel Vitor](https://github.com/evfernandes-dev).
