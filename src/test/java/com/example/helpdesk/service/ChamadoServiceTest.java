@@ -50,6 +50,48 @@ class ChamadoServiceTest {
     }
 
     @Test
+    void deveBuscarChamadoPorId() {
+        Chamado chamado = new Chamado();
+        chamado.setId(1L);
+        chamado.setTitulo("Erro no login");
+        chamado.setDescricao("Não consigo logar no sistema");
+
+        when(chamadoRepository.findById(1L)).thenReturn(Optional.of(chamado));
+
+        Optional<Chamado> resultado = chamadoService.buscarPorId(1L);
+
+        assertTrue(resultado.isPresent());
+        assertEquals("Erro no login", resultado.get().getTitulo());
+        verify(chamadoRepository, times(1)).findById(1L);
+    }
+
+    @Test
+    void deveRetornarVazioAoBuscarChamadoInexistente() {
+        when(chamadoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        Optional<Chamado> resultado = chamadoService.buscarPorId(99L);
+
+        assertTrue(resultado.isEmpty());
+        verify(chamadoRepository, times(1)).findById(99L);
+    }
+
+    @Test
+    void deveBuscarChamadosPorStatus() {
+        Chamado aberto = new Chamado();
+        aberto.setId(1L);
+        aberto.setStatus(StatusChamado.ABERTO);
+
+        when(chamadoRepository.findByStatusOrderByDataCriacaoDesc(StatusChamado.ABERTO))
+                .thenReturn(Arrays.asList(aberto));
+
+        List<Chamado> resultado = chamadoService.buscarPorStatus(StatusChamado.ABERTO);
+
+        assertEquals(1, resultado.size());
+        assertEquals(StatusChamado.ABERTO, resultado.get(0).getStatus());
+        verify(chamadoRepository, times(1)).findByStatusOrderByDataCriacaoDesc(StatusChamado.ABERTO);
+    }
+
+    @Test
     void deveCriarChamadoComSucesso() {
         Chamado chamado = new Chamado();
         chamado.setTitulo("Nova impressora");
@@ -160,5 +202,36 @@ class ChamadoServiceTest {
         assertEquals(StatusChamado.FECHADO, atualizado.getStatus());
         assertNotNull(atualizado.getDataFechamento());
         assertEquals("Titulo Novo", atualizado.getTitulo());
+    }
+
+    @Test
+    void deveLancarErroAoAtualizarChamadoInexistente() {
+        Chamado atualizacao = new Chamado();
+        atualizacao.setTitulo("Qualquer titulo");
+        atualizacao.setDescricao("Qualquer descricao");
+
+        when(chamadoRepository.findById(99L)).thenReturn(Optional.empty());
+
+        assertThrows(ChamadoNotFoundException.class,
+                () -> chamadoService.atualizar(99L, atualizacao));
+        verify(chamadoRepository, never()).save(any(Chamado.class));
+    }
+
+    @Test
+    void deveDeletarChamadoExistente() {
+        when(chamadoRepository.existsById(1L)).thenReturn(true);
+
+        chamadoService.deletar(1L);
+
+        verify(chamadoRepository, times(1)).deleteById(1L);
+    }
+
+    @Test
+    void deveLancarErroAoDeletarChamadoInexistente() {
+        when(chamadoRepository.existsById(99L)).thenReturn(false);
+
+        assertThrows(ChamadoNotFoundException.class,
+                () -> chamadoService.deletar(99L));
+        verify(chamadoRepository, never()).deleteById(99L);
     }
 }
