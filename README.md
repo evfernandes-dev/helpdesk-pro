@@ -1,5 +1,7 @@
 # Help Desk
 
+[![build](https://github.com/evfernandes-dev/helpdesk-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/evfernandes-dev/helpdesk-pro/actions/workflows/ci.yml)
+
 Small support ticket app with a REST API and a built-in web page.
 Built with Java 21, Spring Boot 3.4, Spring Data JPA and MySQL.
 
