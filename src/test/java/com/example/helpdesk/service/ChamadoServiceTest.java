@@ -1,5 +1,6 @@
 package com.example.helpdesk.service;
 
+import com.example.helpdesk.exception.ChamadoNotFoundException;
 import com.example.helpdesk.model.Chamado;
 import com.example.helpdesk.model.StatusChamado;
 import com.example.helpdesk.repository.ChamadoRepository;
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -133,7 +133,7 @@ class ChamadoServiceTest {
     void deveLancarErroAoAtualizarStatusDeChamadoInexistente() {
         when(chamadoRepository.findById(99L)).thenReturn(Optional.empty());
 
-        assertThrows(ResponseStatusException.class,
+        assertThrows(ChamadoNotFoundException.class,
                 () -> chamadoService.atualizarStatus(99L, StatusChamado.FECHADO));
         verify(chamadoRepository, never()).save(any(Chamado.class));
     }

@@ -1,12 +1,11 @@
 package com.example.helpdesk.service;
 
+import com.example.helpdesk.exception.ChamadoNotFoundException;
 import com.example.helpdesk.model.Chamado;
 import com.example.helpdesk.model.StatusChamado;
 import com.example.helpdesk.repository.ChamadoRepository;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -48,7 +47,7 @@ public class ChamadoService {
 
     public Chamado atualizar(Long id, Chamado chamadoAtualizado) {
         Chamado chamado = chamadoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chamado não encontrado com ID: " + id));
+                .orElseThrow(() -> new ChamadoNotFoundException(id));
 
         if (chamadoAtualizado.getTitulo() != null && !chamadoAtualizado.getTitulo().isBlank()) {
             chamado.setTitulo(chamadoAtualizado.getTitulo());
@@ -65,7 +64,7 @@ public class ChamadoService {
 
     public Chamado atualizarStatus(Long id, StatusChamado novoStatus) {
         Chamado chamado = chamadoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Chamado não encontrado com ID: " + id));
+                .orElseThrow(() -> new ChamadoNotFoundException(id));
 
         aplicarStatus(chamado, novoStatus);
         return chamadoRepository.save(chamado);
@@ -84,7 +83,7 @@ public class ChamadoService {
 
     public void deletar(Long id) {
         if (!chamadoRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Chamado não encontrado com ID: " + id);
+            throw new ChamadoNotFoundException(id);
         }
         chamadoRepository.deleteById(id);
     }
